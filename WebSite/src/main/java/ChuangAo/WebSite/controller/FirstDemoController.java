@@ -17,7 +17,7 @@ public class FirstDemoController
 
 	@RequestMapping("/")
 	private Iterable<Item> home(){
-		return firstDemoService.findByTitle("item 1");
+		return firstDemoService.findByTitle("item");
 	}
 	
 	@RequestMapping("/la")
