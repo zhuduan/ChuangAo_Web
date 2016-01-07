@@ -1,4 +1,4 @@
-package ChuangAo.WebSite;
+package ChuangAo.WebSite.controller;
 
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.*;
@@ -10,22 +10,17 @@ import org.springframework.web.bind.annotation.*;
  *
  */
 @RestController
-@EnableAutoConfiguration
 public class Example 
 {
 	@RequestMapping("/")
-	String home(){
+	private String home(){
 		return "hello world";
 	}
 	
 	@RequestMapping("/la")
-	String home(String la){
+	private String home(String la){
 		la = "lala";
 		return "hello " + la;
 	}
-	
-	
-	public static void main(String[] args) throws Exception {
-        SpringApplication.run(Example.class, args);
-    }
+
 }
