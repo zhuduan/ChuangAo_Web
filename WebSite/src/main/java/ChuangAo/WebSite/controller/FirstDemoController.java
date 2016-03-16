@@ -2,6 +2,10 @@ package ChuangAo.WebSite.controller;
 
 import ChuangAo.WebSite.model.Item;
 import ChuangAo.WebSite.service.FirstDemoService;
+import ChuangAo.WebSite.service.followOrderService;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,5 +29,30 @@ public class FirstDemoController
 		la = "lala";
 		return "hello " + la;
 	}
+	
+	
+
+	@RequestMapping("/commonService/follow/sender")
+	private String followSender(HttpServletRequest request, HttpServletResponse  response){
+		Map<String, String[]> map = request.getParameterMap();
+		String[] keys = {"{ \"result\" : -1 }"};
+		map.keySet().toArray(keys);
+		System.out.println("~~~keys: "+keys[0]);
+		return followOrderService.updateSenderState(keys[0]);
+	}
+	
+	@RequestMapping("/commonService/follow/reveiver")
+	private String followReceiver(HttpServletRequest request, HttpServletResponse  response){
+		Map<String, String[]> map = request.getParameterMap();
+		String[] keys = {"{ \"result\" : -1 }"};
+		map.keySet().toArray(keys);
+		System.out.println("~~~keys: "+keys[0]);
+		String result = followOrderService.updateReceiverState(keys[0]);
+		System.out.println("***result: "+result);
+		return result;
+	}
+	
+	
+	
 
 }

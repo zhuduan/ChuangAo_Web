@@ -1,4 +1,4 @@
-package Chuangao.WebSite;
+package ChuangAo.WebSite;
 
 import ChuangAo.WebSite.Application;
 import org.junit.Test;
