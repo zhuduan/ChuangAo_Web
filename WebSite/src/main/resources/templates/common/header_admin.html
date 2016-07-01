@@ -31,10 +31,17 @@
   <div class="am-collapse am-topbar-collapse" id="topbar-collapse">
 
     <ul class="am-nav am-nav-pills am-topbar-nav am-topbar-right admin-header-list">
-      <li><a href="javascript:;"><span class="am-icon-envelope-o"></span> 收件箱 <span class="am-badge am-badge-warning">5</span></a></li>
+      <li><a href="javascript:;"><span class="am-icon-envelope-o"></span> 收件箱 
+		<!--  暂未使用
+			<span class="am-badge am-badge-warning">5</span>		
+		-->
+		</a>
+	  </li>
       <li class="am-dropdown" data-am-dropdown>
         <a class="am-dropdown-toggle" data-am-dropdown-toggle href="javascript:;">
-          <span class="am-icon-users"></span> 管理员 <span class="am-icon-caret-down"></span>
+          <span class="am-icon-users"></span> 
+		  <span id="userName">管理员</span> <input type="hidden" id="userID" value="0"></input>
+		  <span class="am-icon-caret-down"></span>
         </a>
         <ul class="am-dropdown-content">
           <li><a href="#"><span class="am-icon-user"></span> 资料</a></li>
@@ -52,45 +59,52 @@
   <div class="admin-sidebar am-offcanvas" id="admin-offcanvas">
     <div class="am-offcanvas-bar admin-offcanvas-bar">
       <ul class="am-list admin-sidebar-list">
-        <li><a href="admin-index.html"><span class="am-icon-home"></span> 首页</a></li>
+        <li><a href="/admin/index"><span class="am-icon-home"></span> 首页</a></li>
         <li class="admin-parent">
           <a class="am-cf" data-am-collapse="{target: '#collapse-nav_Common'}"><span class="am-icon-file"></span> 通用功能 <span class="am-icon-angle-right am-fr am-margin-right"></span></a>
-          <ul class="am-list am-collapse admin-sidebar-sub am-in" id="collapse-nav_Common">
-            <li><a href="#" class="am-cf"><span class="am-icon-check"></span> 个人资料 <span class="am-icon-star am-fr am-margin-right admin-icon-yellow"></span></a></li>
-            <li><a href="#"><span class="am-icon-calendar"></span> 待处理事件</a></li>
-			<li><a href="#"><span class="am-icon-puzzle-piece"></span> 帮助文档 </a></li>
+          <ul class="am-list am-collapse admin-sidebar-sub" id="collapse-nav_Common">
+            <li><a href="#" style="color:#f3f3f3"><span class="am-icon-check"></span> 个人资料</a></li>
+            <li><a href="#" style="color:#f3f3f3"><span class="am-icon-calendar"></span> 待处理事件</a></li>
+			<li><a href="#" style="color:#f3f3f3"><span class="am-icon-puzzle-piece"></span> 帮助文档 </a></li>
           </ul>
         </li>
 		<li class="admin-parent">
-          <a class="am-cf am-collapsed" data-am-collapse="{target: '#collapse-nav_SysAdmin'}"><span class="am-icon-th"></span> 系统管理 <span class="am-icon-angle-right am-fr am-margin-right"></span></a>
-          <ul class="am-list am-collapse admin-sidebar-sub" id="collapse-nav_SysAdmin">
-            <li><a href="#"><span class="am-icon-puzzle-piece"></span>用户管理</a></li>
-			<li><a href="#"><span class="am-icon-puzzle-piece"></span>信息管理</a></li>
-            <li><a href="#"><span class="am-icon-bug"></span> 系统日志</a></li>
+          <a class="am-cf am-collapsed" data-am-collapse="{target: '#collapse-nav_UserAdmin'}"><span class="am-icon-th"></span> 用户管理 <span class="am-icon-angle-right am-fr am-margin-right"></span></a>
+          <ul class="am-list am-collapse admin-sidebar-sub am-in" id="collapse-nav_UserAdmin">
+            <li><a href="/admin/user/ownAccounts?page=0&size=10"><span class="am-icon-puzzle-piece"></span>用户权限</a></li>
+			<li><a href="#" style="color:#f3f3f3"><span class="am-icon-puzzle-piece"></span>用户资料</a></li>
           </ul>
         </li>
 		<li class="admin-parent">
-          <a class="am-cf am-collapsed" data-am-collapse="{target: '#collapse-nav_StaticInfo'}"><span class="am-icon-table"></span> 数据管理 <span class="am-icon-angle-right am-fr am-margin-right"></span></a>
-          <ul class="am-list am-collapse admin-sidebar-sub" id="collapse-nav_StaticInfo">
-			<li><a href="#"><span class="am-icon-puzzle-piece"></span>访问数据</a></li>
-            <li><a href="#"><span class="am-icon-puzzle-piece"></span>财务数据</a></li>
-			<li><a href="#"><span class="am-icon-puzzle-piece"></span>账号数据</a></li>
+          <a class="am-cf am-collapsed" data-am-collapse="{target: '#collapse-nav_AccountAdmin'}"><span class="am-icon-table"></span> 账号管理 <span class="am-icon-angle-right am-fr am-margin-right"></span></a>
+          <ul class="am-list am-collapse admin-sidebar-sub" id="collapse-nav_AccountAdmin">
+			<li><a href="#" style="color:#f3f3f3"><span class="am-icon-puzzle-piece"></span>公共服务</a></li>
+            <li><a href="#" style="color:#f3f3f3"><span class="am-icon-puzzle-piece"></span>EA管理</a></li>
+			<li><a href="#" style="color:#f3f3f3"><span class="am-icon-puzzle-piece"></span>工具管理</a></li>
           </ul>
         </li>
-        <li><a href="#"><span class="am-icon-sign-out"></span> 注销</a></li>
+		<li class="admin-parent">
+          <a class="am-cf am-collapsed" data-am-collapse="{target: '#collapse-nav_SysAdmin'}"><span class="am-icon-table"></span> 系统管理 <span class="am-icon-angle-right am-fr am-margin-right"></span></a>
+          <ul class="am-list am-collapse admin-sidebar-sub am-in" id="collapse-nav_SysAdmin">
+			<li><a href="#" style="color:#f3f3f3"><span class="am-icon-puzzle-piece"></span>访问数据</a></li>
+            <li><a href="#" style="color:#f3f3f3"><span class="am-icon-puzzle-piece"></span>日志数据</a></li>
+			<li><a href="/admin/resource/comsume/user?page=0&size=10"><span class="am-icon-puzzle-piece"></span>用户类资源消耗</a></li>
+          </ul>
+        </li>
+        <li><a href="/logout"><span class="am-icon-sign-out"></span> 注销</a></li>
       </ul>
 
       <div class="am-panel am-panel-default admin-sidebar-panel">
         <div class="am-panel-bd">
           <p><span class="am-icon-bookmark"></span> 公告</p>
-          <p id="noticeParagraph">时光静好，与君语；细水流年，与君同。—— Amaze UI</p>
+          <p id="noticeParagraph">青青子衿，悠悠我心，但为君故，沉吟至今</p>
         </div>
       </div>
 
       <div class="am-panel am-panel-default admin-sidebar-panel">
         <div class="am-panel-bd">
           <p><span class="am-icon-tag"></span> Tips</p>
-          <p id="tipsParagraph">Welcome to the Amaze UI wiki!</p>
+          <p id="tipsParagraph">Welcome to the mychuangao.com</p>
         </div>
       </div>
     </div>
@@ -113,7 +127,7 @@
 <footer>
   <hr>
 	<p class="am-padding-left">
-		? 2016 <a href="http://www.mychuangao.com" target="_blank">创澳商务信息咨询有限公司</a> 
+		©2016 <a href="http://www.mychuangao.com" target="_blank">创澳商务信息咨询有限公司</a> 
 		&nbsp;&nbsp; 备案号：<a href="http://www.miitbeian.gov.cn/" target="_blank">蜀ICP备15024633号-2</a>
 		. &nbsp;&nbsp; by the ChuangAo Team.
 	</p>
@@ -128,6 +142,7 @@
 	<!--<![endif]-->
 	<script src="../../static/assets/js/amazeui.min.js"></script>
 	<script src="../../static/assets/js/app.js"></script>
+	<script src="../../static/assets/js/customFunction.js"></script>
 </footer>
 
 

@@ -9,14 +9,20 @@ public class commonTimer {
 	public static void timerTasks(){
     	
     	//---follow order service : heartBeat task
-    	heartbeatStatusDaemon heartDaemon = new heartbeatStatusDaemon(FollowOrderService.receiverState,
+    	HeartbeatStatusDaemon heartbeatStatusDaemon = new HeartbeatStatusDaemon(FollowOrderService.receiverState,
     																	FollowOrderService.senderState,
     																	FollowOrderService.senderHeartBeat,
     																	FollowOrderService.receiverHeartBeat,
     																	FollowOrderService.sendOrders,
-    																	FollowOrderService.senderCountDown);
+    																	FollowOrderService.senderCountDown,
+    																	FollowOrderService.accountDatas);
+    	
+    	OnlineObserversDaemon onlineObserversDaemon = OnlineObserversDaemon.getInstance();
+    	
+    	//--- star timer
     	Timer timer = new Timer();
-    	timer.schedule(heartDaemon, 20000, 1000);	//interval 1000ms
+    	timer.schedule(heartbeatStatusDaemon, 20000, 1000);	//interval 1000ms
+    	timer.schedule(onlineObserversDaemon, 1000, 15000);	//interval 15,000ms
 		
 		
 		//---others

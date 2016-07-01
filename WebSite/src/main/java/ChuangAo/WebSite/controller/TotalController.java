@@ -20,17 +20,20 @@ import org.apache.shiro.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import ChuangAo.WebSite.model.*;
 import ChuangAo.WebSite.service.*;
 import ChuangAo.WebSite.util.includeTemplateUtil;
 
@@ -45,10 +48,7 @@ public class TotalController
 	
 	Date dt = new Date();
 	private static final Logger logger = LoggerFactory.getLogger(TotalController.class);
-	
-	@Autowired
-	private FirstDemoService firstDemoService;
-	
+		
 	@Autowired
 	private SimilarMartingaleService similarMartingaleService;
 	
@@ -60,6 +60,9 @@ public class TotalController
 	
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private ResourceComsumeUserService resourceComsumeUserService;
 	
 
 	
@@ -89,7 +92,7 @@ public class TotalController
 	
 	@RequestMapping("/index")
 	private String index(ModelMap map){
-		map.addAttribute("host", "http://blog.didispace.com");
+		map.addAttribute("host", "http://mychuangao.com");
 		return "index";
 	}	
 	
@@ -99,17 +102,22 @@ public class TotalController
 		return "/trader/index";
 	}	
 	
+	@RequestMapping("/admin/index")
+	private String adminIndex(ModelMap map){
+		includeTemplateUtil.getInstance().getNavigation(1, map);
+		return "/admin/index";
+	}	
+	
 
 	
 	@RequestMapping("/")
-	@ResponseBody
-	private Iterable<Item> home(){
-		return firstDemoService.findByTitle("item");
+	private String defaultIndex(){
+		return "login";
 	}
+	
 	
 	@RequestMapping("/login")
 	private String logoin(ModelMap map){
-		
 		return ("login");
 	}
 	
@@ -154,7 +162,24 @@ public class TotalController
             Session session = currentUser.getSession();
             session.setAttribute("userName", userName);
             //如果改变成需要id，直接用name的方式能够提高性能
-            session.setAttribute("userID", userService.getUserByName(userName).getId());	
+            session.setAttribute("userID", userService.getUserByName(userName).getId());
+            session.setTimeout(3600*1000);
+            if(savedRequest==null || savedRequest.getRequestUrl()=="/login"){
+            	//TODO: 根据用户种类跳转
+            	if(currentUser.hasRole("sysAdmin")==true){
+            		return "redirect:/trader/index";
+            	} else if(currentUser.hasRole("trader")==true){
+            		return "redirect:/trader/index";
+            	} else if(currentUser.hasRole("developer")==true){
+            		return "redirect:/developer/index";
+            	} else if(currentUser.hasRole("admin")==true){
+            		return "redirect:/admin/index";
+            	} else if(currentUser.hasRole("register")==true){
+            		return "redirect:/register/index";
+            	} else {
+            		return "redirect:/normal/index";
+            	}
+            }
             return "redirect:"+savedRequest.getRequestUrl();
         }else{  
             token.clear();  
@@ -168,6 +193,44 @@ public class TotalController
         SecurityUtils.getSubject().logout();
         return "redirect:/login";
     }
+	
+	
+	@RequestMapping(value="/common/user/ownAccounts/{userID}/{userType}", method=RequestMethod.GET)
+    public String userOwnAccounts(@PathVariable("userID") Integer userID, 
+    							@PathVariable("userType") Integer userType,
+    							ModelMap map){
+        includeTemplateUtil.getInstance().getNavigation(userType, map);
+        userService.getUserAccountInfoByID(userID, map);
+        return "userOwnAccounts";
+    }
+	
+	@RequestMapping(value="/admin/user/ownAccounts", method=RequestMethod.GET)
+    public String getAlluserOwnAccounts(ModelMap map,
+    								@RequestParam(value = "page", defaultValue = "0") Integer page,
+    								@RequestParam(value = "size", defaultValue = "10") Integer size){
+        includeTemplateUtil.getInstance().getNavigation(1, map);
+        Sort sort = new Sort(Direction.ASC, "id");
+        Pageable pageable = new PageRequest(page, size, sort);
+        userService.getAllUserAccountInfo(map, pageable);
+        map.addAttribute("requestPage", page);
+        return "/admin/userInfo";
+    }
+	
+	
+	@RequestMapping(value="/admin/resource/comsume/user", method=RequestMethod.GET)
+    public String getAllResourceComsumeUser(ModelMap map,
+    								@RequestParam(value = "page", defaultValue = "0") Integer page,
+    								@RequestParam(value = "size", defaultValue = "10") Integer size){
+        includeTemplateUtil.getInstance().getNavigation(1, map);
+        Sort sort = new Sort(Direction.ASC, "userid");
+        Pageable pageable = new PageRequest(page, size, sort);
+        resourceComsumeUserService.getAllResourceComsumeUser(map, pageable);
+        map.addAttribute("requestPage", page);
+        return "/admin/resourceComsumeUser";
+    }
+	
+	
+	
 	
 	
 
@@ -196,6 +259,14 @@ public class TotalController
 		String result = followOrderService.updateReceiverState(keys[0]);
 		//System.out.println("***receiver: "+result);
 		return result;
+	}
+	
+	
+	@RequestMapping(value="/commonService/follow/all/{userID}",method=RequestMethod.GET)
+	private String getFollowAccounts(@PathVariable("userID") Integer userID, ModelMap map){
+		includeTemplateUtil.getInstance().getNavigation(2, map);
+		map.addAttribute("followList", followOrderService.getAccountsByUserID(userID));
+		return "/trader/follow";
 	}
 	
 	
@@ -242,16 +313,7 @@ public class TotalController
     public void addNewMonitor(@PathVariable("userID") Integer userID){
 		//---
 		onlineMonitorService.addObserver(userID);
-		System.out.println("*******: add Observer-"+userID);
-    }
-	
-	
-	//---这个映射规则违反了严格的REST设计，但是暂时没想到更好的办法
-	@MessageMapping("/commonService/onlineMonitor/{userID}/delete")    
-    public void delMonitor(@PathVariable("userID") Integer userID){
-		//---
-		onlineMonitorService.delObserver(userID);
-		System.out.println("*******: del Observer-"+userID);
+		//System.out.println("*******: add Observer-"+userID);
     }
 	
 	
@@ -262,16 +324,6 @@ public class TotalController
 		includeTemplateUtil.getInstance().getNavigation(2, map);		
 		return "/trader/onlineMonitor";
     }
-	
-	
-//-----------------------------
-//--- 错误页面集中控制段
-//-----------------------------
-	
-	@RequestMapping("/403")
-	public String noPermission(){
-		return "/errorPage/403";
-	}
 	
 
 }

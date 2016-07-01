@@ -3,6 +3,8 @@ package ChuangAo.WebSite.util;
 import java.util.Observable;
 
 
+//---TODO：
+//这里容易成为多线程时的性能瓶颈
 public class OnlineMonitorSubject extends Observable {
 
 	private Integer accountID;
@@ -35,8 +37,8 @@ public class OnlineMonitorSubject extends Observable {
 			this.accountID = ID;
 			this.status = state;
 			this.accountType = accountType;
-		}
-		accountStatusChanged();
+			accountStatusChanged();
+		}		
 	}
 	
 	

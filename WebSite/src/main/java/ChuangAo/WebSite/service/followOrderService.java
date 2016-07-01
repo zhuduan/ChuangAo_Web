@@ -2,10 +2,15 @@ package ChuangAo.WebSite.service;
 
 import ChuangAo.WebSite.model.Follow;
 import ChuangAo.WebSite.repository.FollowRepository;
+import ChuangAo.WebSite.repository.UserRepository;
 import ChuangAo.WebSite.util.OnlineMonitorSubject;
 import ChuangAo.WebSite.util.senderStatusChangeDaemon;
 
+import java.util.ArrayList;
 import java.util.Date;
+
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -18,12 +23,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 @Service
 @Transactional
 public class FollowOrderService {
 	
 	@Autowired
 	private FollowRepository followRepository;
+	
+	@Autowired
+	private UserRepository userRepository;	
 	
 	/***
 	 * store the list info 
@@ -37,6 +46,8 @@ public class FollowOrderService {
 	// 1: 鉴权，  2：连接，  3：变化，  4：和trader断开, 5:feedback, 6:无订单, 7:丢失心跳
 	public static ConcurrentHashMap<Integer,Integer> senderState = new ConcurrentHashMap<Integer,Integer>();
 	
+	//--- statistic all datas
+	public static ConcurrentHashMap<Integer,JSONObject> accountDatas = new ConcurrentHashMap<Integer,JSONObject>();	
 	
 	//--- inner variables
 	private static int maxSleepSeconds = 10;
@@ -45,15 +56,17 @@ public class FollowOrderService {
 	private static int heartBeatExpireSeconds = 26;
 	public static ConcurrentHashMap<Integer,Integer> senderHeartBeat = new ConcurrentHashMap<Integer,Integer>();
 	public static ConcurrentHashMap<Integer,Integer> receiverHeartBeat = new ConcurrentHashMap<Integer,Integer>();
+		
+	public static ConcurrentHashMap<Integer,Integer> textNoticeFlag= new ConcurrentHashMap<Integer,Integer>();
 	
 	/**
 	 * @return whether the receiver should return the updated info
 	 */
-	private String getReceiverCheckResult(Integer senderID){
+	private String getReceiverCheckResult(Integer senderID, Integer receiverID,JSONObject data){
 		//e.g. { "name": "7767180_1449565020_98225687", "priceNow": 1.50258, "lots": 0.21, "symbol": "GBPUSDm", "operationType": -11, "orderType": 0, "nowTicket": 98225896,"timelong": 1449565020,"accountID": 7767180} ;
 		
 		StringBuffer result = new StringBuffer();
-		Integer dealingStats = 0;	// 0:初始值，  1：正常跟单处理，   2：正常单不处理，   -1：跟单号不存在，  -2:跟单号已断连   ，  -99：未知错误
+		Integer dealingStats = 0;	// 0:初始值，  1：正常跟单处理，   2：正常单不处理，   -1：跟单号不存在，  -2:喊单号已断连   ，  -99：未知错误
 		result.append("{ ");
 		if(senderState.containsKey(senderID) == false){
 			dealingStats = -1;
@@ -64,10 +77,14 @@ public class FollowOrderService {
 					break;
 				case 2:
 					dealingStats = 2;
+					receiverState.put(receiverID, 2);
 					break;
 				case 3:
 					dealingStats = 1;
 					result.append(jointInfoStr(senderID));
+					receiverState.put(receiverID, 3);
+					accountDatas.put(receiverID, data);
+					OnlineMonitorSubject.getInstance().setChangedAccountStatus(receiverID, 3, 2);
 					break;
 				case 4:
 					dealingStats = -2;
@@ -113,26 +130,43 @@ public class FollowOrderService {
 		JSONObject json = new JSONObject(receiverInfo);
 		int requestType = json.getInt("RequestType");
 		int senderID = json.getInt("SenderID");
-		int receiverID = json.getInt("AccountID");		
+		int receiverID = json.getInt("AccountID");			
 		String resultStr = "";
 		switch(requestType){
 			case 1:
-				//鉴权 - TODO
-				json.put("dealingStats",authority(1, receiverID, senderID));
+				int tempResult = authority(1, receiverID, senderID);
+				json.put("dealingStats",tempResult);
 				resultStr = json.toString();
+				if(tempResult>0){
+					receiverState.put(receiverID, 1);
+					accountDatas.put(receiverID, json.getJSONObject("accountData"));
+					OnlineMonitorSubject.getInstance().setChangedAccountStatus(receiverID, 1, 2);
+				}
 				break;
 			case 2:
 				//listing
-				resultStr = getReceiverCheckResult(senderID);
+				if(senderState.containsKey(senderID) == true){
+					if(senderState.get(senderID)==3){
+						
+					}
+				}
+				resultStr = getReceiverCheckResult(senderID,receiverID,json.getJSONObject("accountData"));				
 				break;
 			case 3:
 				//listening too
 				break;
-			case 4:
-				//check the trade server - TODO
+			case 4:			
+				json.put("dealingStats",1);
+				resultStr = json.toString();
+				receiverState.put(receiverID, 4);
+				accountDatas.put(receiverID, json.getJSONObject("accountData"));
+				OnlineMonitorSubject.getInstance().setChangedAccountStatus(receiverID, 4, 2);
 				break;
 			case 5:
-				//feedback - TODO
+				//feedback the statistic datas 
+				receiverState.put(receiverID, 5);
+				accountDatas.put(receiverID, json.getJSONObject("accountData"));
+				OnlineMonitorSubject.getInstance().setChangedAccountStatus(receiverID, 5, 2);
 				break;
 			case 6:
 				//no order - TODO
@@ -157,6 +191,8 @@ public class FollowOrderService {
 	 * 	       4 for normal request 1 info new open return,
 	 * 	       5 for normal request 2 no key return,
 	 * 	       6 for normal request 2 state 3 return,
+	 * 		   7 for request 4 return,
+	 *         8 for request 5 return,
 	 * 	       11 for normal request 2 normal return,
 	 * 	       12 for normal request 2 clear all return,
 	 */
@@ -165,15 +201,21 @@ public class FollowOrderService {
 		Integer requestType = json.getInt("requestType");		//0 for authority, 1 for normal sending,  2 for update info, 3 for feedback, 4 for exit
 		Integer totalOrderNum = json.getInt("totalOrderNum");
 		Integer senderID = json.getInt("accountID");
+		accountDatas.put(senderID,json.getJSONObject("accountData"));
 		json.put("result", 0);
 		switch(requestType){
 			case 0:
 				//---authority
-				json.put("result",authority(2, senderID, senderID));
+				int tempResult = authority(2, senderID, senderID);
+				json.put("result",tempResult);
+				if(tempResult>0){
+					senderState.put(senderID,1);
+					OnlineMonitorSubject.getInstance().setChangedAccountStatus(senderID, 1, 1);	
+				}
 				break;
 			case 1:
 				//---normal sender
-				json.put("result",senderInfoChange(json.getJSONObject("orders"),senderID));
+				json.put("result",senderInfoChange(json.getJSONObject("orders"),senderID));				
 				break;
 			case 2:
 				//---update info
@@ -199,10 +241,18 @@ public class FollowOrderService {
 				//---send too
 				break;
 			case 4:
-				//---check the trade server - TODO
+				if(senderState.containsKey(senderID)==true){
+					senderState.put(senderID,4);
+					OnlineMonitorSubject.getInstance().setChangedAccountStatus(senderID, 4, 1);	
+					json.put("result",7);
+				}
 				break;
 			case 5:
-				//feedback - TODO
+				if(senderState.containsKey(senderID)==true){
+					senderState.put(senderID,5);
+					OnlineMonitorSubject.getInstance().setChangedAccountStatus(senderID, 5, 1);
+					json.put("result",8);
+				}
 				break;
 			case 6:
 				//---no order already did in case 2
@@ -261,7 +311,7 @@ public class FollowOrderService {
 	 * @param ordersInfo
 	 * @param totalOrderNum
 	 * @param senderID
-	 * @return -11 for wrong place, 11 for normal, 12 for clear all
+	 * @return 11 for normal, 12 for clear all
 	 */
 	private Integer senderInfoPeriodUpdate(JSONObject ordersInfo,Integer totalOrderNum,Integer senderID){
 		//---
@@ -272,11 +322,11 @@ public class FollowOrderService {
 			senderCountDown.put(senderID,0);
 			return 12;
 		}
+		
 		if(sendOrders.containsKey(senderID)==false){
-			//---should not do here
-			//TODO: should add new?
-			return -11;
-		}
+			//---if server is disconnect first, or the heartbeat disconnect
+			sendOrders.put(senderID,new ConcurrentHashMap<String,String>());
+		} 
 		ConcurrentHashMap<String,String> orderDetails = sendOrders.get(senderID);
 		//---update all info here
 		orderDetails.clear();
@@ -284,6 +334,10 @@ public class FollowOrderService {
 			JSONObject tempOrder = ordersInfo.getJSONObject("order_"+i);
 			String orderName = tempOrder.getString("name");			
 			orderDetails.put(orderName, tempOrder.toString());
+		}
+		if(senderState.containsKey(senderID)==false){
+			senderState.put(senderID,2);
+			OnlineMonitorSubject.getInstance().setChangedAccountStatus(senderID, 2, 1);	
 		}
 		return 11;
 	}
@@ -328,11 +382,25 @@ public class FollowOrderService {
 			return -4;	//exceed the expire time
 		}
 		
-		//---TODO:
-		//1. set the values(offline,feedback,dataStatistic) as 1 in db
-		//2. show the front page the values and account are ready
-		//--- details should be considered in the future, when the info displayed in the fp
-		
+		if(accountType==1){
+			//as receiver
+			follow.setAsReceiver((follow.getAsReceiver()+1));
+		} else {
+			//as sender
+			follow.setAsSender((follow.getAsSender()+1));
+		}
+		followRepository.save(follow);		
 		return 1;
+	}
+	
+	public List<Follow> getAccountsByUserID(Integer userID){
+		JSONObject ownAccountsJson = new JSONObject(userRepository.findByid(userID).getOwnAccounts());
+		Iterator<String> iterator = ownAccountsJson.keys();
+		List<Integer> ownAccountsList = new ArrayList<Integer>();
+		while(iterator.hasNext()){
+			Integer key = Integer.parseInt(iterator.next()); 
+			ownAccountsList.add(key);
+		}
+		return followRepository.findInAccountIDList(ownAccountsList);
 	}
 }

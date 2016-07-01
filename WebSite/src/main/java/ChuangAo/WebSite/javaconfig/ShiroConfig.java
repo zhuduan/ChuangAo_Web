@@ -7,7 +7,9 @@ import org.apache.shiro.cache.ehcache.EhCacheManager;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.shiro.web.servlet.SimpleCookie;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +34,31 @@ public class ShiroConfig {
         realm.setCacheManager(cacheManager);
         return realm;
     }  
+    
+    
+    /**
+     * cookie对象;
+     * @return
+     */
+    @Bean
+    public SimpleCookie rememberMeCookie(){
+       //这个参数是cookie的名称，对应前端的checkbox的name = rememberMe
+       SimpleCookie simpleCookie = new SimpleCookie("rememberMe");
+       //<!-- 记住我cookie生效时间7天 ,单位秒;-->
+       simpleCookie.setMaxAge(6048000);
+       return simpleCookie;
+    }
+   
+    /**
+     * cookie管理对象;
+     * @return
+     */
+    @Bean
+    public CookieRememberMeManager rememberMeManager(){
+       CookieRememberMeManager cookieRememberMeManager = new CookieRememberMeManager();
+       cookieRememberMeManager.setCookie(rememberMeCookie());
+       return cookieRememberMeManager;
+    }
     
     
     /**
@@ -72,8 +99,14 @@ public class ShiroConfig {
     public DefaultWebSecurityManager getDefaultWebSecurityManager(MyShiroRealm myShiroRealm) {
         DefaultWebSecurityManager dwsm = new DefaultWebSecurityManager();
         dwsm.setRealm(myShiroRealm);
-//      <!-- 用户授权/认证信息Cache, 采用EhCache 缓存 --> 
-        dwsm.setCacheManager(getEhCacheManager());
+        
+        //用户授权/认证信息Cache, 采用EhCache 缓存 
+        dwsm.setCacheManager(getEhCacheManager()); 
+        
+        //采用cookies记录状态
+        dwsm.setRememberMeManager(rememberMeManager());
+        
+        
         return dwsm;
     }
 
@@ -99,6 +132,14 @@ public class ShiroConfig {
         
         filterChainDefinitionMap.put("/trader/**", "authc,roles[trader]");
         filterChainDefinitionMap.put("/trader/**", "authc,roles[sysAdmin]");
+        filterChainDefinitionMap.put("/admin/**", "authc,roles[admin]");
+        filterChainDefinitionMap.put("/admin/**", "authc,roles[sysAdmin]");
+        
+        filterChainDefinitionMap.put("/commonService/follow/all/**", "authc,roles[trader]");
+        filterChainDefinitionMap.put("/commonService/follow/all/**", "authc,roles[sysAdmin]");   
+        
+        filterChainDefinitionMap.put("/common/user/**", "authc");
+        
         
         // 设置anon：都可以访问        
         filterChainDefinitionMap.put("/login", "anon");
@@ -128,7 +169,7 @@ public class ShiroConfig {
         // 登录成功后要跳转的连接
         //shiroFilterFactoryBean.setSuccessUrl("/user");
         shiroFilterFactoryBean.setUnauthorizedUrl("/403");
-
+        
         loadShiroFilterChain(shiroFilterFactoryBean);
         return shiroFilterFactoryBean;
     }

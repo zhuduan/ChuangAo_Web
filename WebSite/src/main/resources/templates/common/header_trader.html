@@ -65,12 +65,13 @@
           <ul class="am-list am-collapse admin-sidebar-sub am-in" id="collapse-nav_Common">
             <li><a href="#" style="color:#f3f3f3"><span class="am-icon-check"></span>个人资料</a></li>
             <li><a href="#" style="color:#f3f3f3"><span class="am-icon-calendar"></span> 待处理事件</a></li>
+			<li><a href="#" onclick="loadUserAccountInfo(2)"><span class="am-icon-calendar"></span> 账号信息</a></li>
           </ul>
         </li>
 		<li class="admin-parent">
           <a class="am-cf" data-am-collapse="{target: '#collapse-nav_SysAdmin'}"><span class="am-icon-th"></span> 软件服务 <span class="am-icon-angle-right am-fr am-margin-right"></span></a>
           <ul class="am-list am-collapse admin-sidebar-sub am-in" id="collapse-nav_SysAdmin">
-			<li><a href="#"><span class="am-icon-puzzle-piece"></span>网络跟单服务</a></li>
+			<li><a href="#" onclick="loadFollow()"><span class="am-icon-puzzle-piece"></span>网络跟单服务</a></li>
             <li><a href="#" onclick="loadOnlineMonitor()"><span class="am-icon-puzzle-piece"></span>在线监控服务</a></li>
 			<li><a href="#" style="color:#f3f3f3"><span class="am-icon-puzzle-piece"></span>数据统计服务</a></li>
           </ul>

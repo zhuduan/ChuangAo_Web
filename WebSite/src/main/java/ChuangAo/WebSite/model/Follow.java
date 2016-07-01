@@ -25,27 +25,24 @@ public class Follow {
     @Column(name = "expiretime", nullable = false)
     private Timestamp expiretime;
     
-    @Column(name = "offline", nullable = false)
-    private Short offline;
+    @Column(name = "as_sender", nullable = false)
+    private Integer as_sender;
     
-    @Column(name = "feedback", nullable = false)
-    private Short feedback;
+    @Column(name = "as_receiver", nullable = false)
+    private Integer as_receiver;
     
-    @Column(name = "datastatistic", nullable = false)
-    private Short datastatistic;
     
     
 
     public Follow(Integer accountid,Short accounttype,
     				String followaccount, Timestamp expiretime, 
-    				Short offline, Short feedback, Short datastatistic) {
+    				Integer as_sender, Integer as_receiver) {
         this.accountid = accountid;
         this.accounttype = accounttype;
         this.followaccount = followaccount;
         this.expiretime = expiretime;
-        this.offline = offline;
-        this.feedback = feedback;
-        this.datastatistic = datastatistic;
+        this.as_sender = as_sender;
+        this.as_receiver = as_receiver;
     }
 
     public Follow() {
@@ -68,15 +65,37 @@ public class Follow {
 	   return expiretime;
    }
    
-   public Short getOFFline(){
-	   return offline;
+   public Integer getAsSender(){
+	   return as_sender;
    }
    
-   public Short getFeedBack(){
-	   return feedback;
+   public Integer getAsReceiver(){
+	   return as_receiver;
    }
    
-   public Short getDataStatistic(){
-	   return datastatistic;
+
+   public void setAccountID(Integer ID){
+	   this.accountid=ID;
    }
+   
+   public void setAccountType(Short type){
+	   this.accounttype=type;
+   }
+   
+   public void setFollowAccount(String fa){
+	   this.followaccount=fa;
+   }
+   
+   public void setExpireTime(Timestamp time){
+	   this.expiretime=time;
+   }
+   
+   public void setAsSender(Integer asSender){
+	   this.as_sender=asSender;
+   }
+   
+   public void setAsReceiver(Integer asReceiver){
+	   this.as_receiver=asReceiver;
+   }
+   
 }
