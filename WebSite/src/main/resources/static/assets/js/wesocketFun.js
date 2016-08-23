@@ -25,7 +25,8 @@
 		//--- websocket info
 		var stompClient = null; 
 		var userID = 0;
-		var lastSendDate = new Date();
+		var lastSendDate = new Date();	
+		var clockTimer = self.setInterval("clock()",10000); 		
 		function setCurrentUserID(){
 			userID = $("#userID").val();		
 		}		
@@ -35,12 +36,19 @@
 			stompClient.heartbeat.outgoing = 25000; 	// client will send heartbeats every 30000ms
 			stompClient.heartbeat.incoming = 0;         // client does not want to receive heartbeats from the server
 			stompClient.connect({}, function (frame) {            
-				 sendInfo(userID); 	//tell the server add a new observer
+				 sendInfo(userID); 	//tell the server add a new observer				 
 				 listenInfo();				
 			}, function (message){
 				alert("监控程序已断开，如需使用请刷新页面");
 			});    
 		}  
+		function clock(){
+			var currentDate = new Date();
+			if((currentDate.getTime()-lastSendDate.getTime())>=120000){		//100s is the lost max
+				alert("由于没有账号连接到服务器，已断开在线监控服务，请有账号连接后刷新本页面来激活本功能，谢谢");
+				self.clearInterval(clockTimer);
+			}
+		}
 		// 断开socket连接
 		function disconnect() {        
 			if (stompClient != null) {       
@@ -64,7 +72,7 @@
 				setChangedAccount(adjustData);
 				
 				var currentDate = new Date();
-				if((currentDate.getTime()-lastSendDate.getTime())>=50000){		//50s send once(server expire is 60s)
+				if((currentDate.getTime()-lastSendDate.getTime())>=50000){		//50s send once(server expire is 100s)
 					sendInfo(userID);
 					lastSendDate = new Date();
 				}

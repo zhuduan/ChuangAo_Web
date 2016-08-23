@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,7 @@ public class FollowOrderService {
 		
 	public static ConcurrentHashMap<Integer,Integer> textNoticeFlag= new ConcurrentHashMap<Integer,Integer>();
 	
+	private static Logger logger = Logger.getLogger(FollowOrderService.class);
 	/**
 	 * @return whether the receiver should return the updated info
 	 */
@@ -144,12 +146,7 @@ public class FollowOrderService {
 				}
 				break;
 			case 2:
-				//listing
-				if(senderState.containsKey(senderID) == true){
-					if(senderState.get(senderID)==3){
-						
-					}
-				}
+				//listing				
 				resultStr = getReceiverCheckResult(senderID,receiverID,json.getJSONObject("accountData"));				
 				break;
 			case 3:
@@ -287,8 +284,14 @@ public class FollowOrderService {
 			// modify the sender status
 			senderStatusChangeDaemon fsDaemon = new senderStatusChangeDaemon(senderID, maxSleepSeconds,operationType,orderName, senderCountDown, senderState,orderDetails);
 			FutureTask<Integer> futureTask = new FutureTask<Integer>(fsDaemon);
-			ExecutorService executor = Executors.newFixedThreadPool(1);
-			executor.execute(futureTask);
+			ExecutorService executor = Executors.newSingleThreadExecutor();
+			try {
+				executor.execute(futureTask);
+				executor.shutdown();
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+				e.printStackTrace();
+			}		
 			return 1;
 		} else{
 			ConcurrentHashMap<String,String> orderDetails = sendOrders.get(senderID);
@@ -297,8 +300,14 @@ public class FollowOrderService {
 			// modify the sender status
 			senderStatusChangeDaemon fsDaemon = new senderStatusChangeDaemon(senderID, maxSleepSeconds,operationType,orderName, senderCountDown, senderState,orderDetails);
 			FutureTask<Integer> futureTask = new FutureTask<Integer>(fsDaemon);
-			ExecutorService executor = Executors.newFixedThreadPool(1);
-			executor.execute(futureTask);
+			ExecutorService executor = Executors.newSingleThreadExecutor();
+			try {
+				executor.execute(futureTask);
+				executor.shutdown();				
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+				e.printStackTrace();
+			}			
 			if((operationType == -1) || (operationType == -2)){
 				return 3;
 			}

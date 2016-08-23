@@ -99,20 +99,26 @@ public class TotalController
 	@RequestMapping("/trader/index")
 	private String traderIndex(ModelMap map){
 		includeTemplateUtil.getInstance().getNavigation(2, map);
-		return "/trader/index";
+		return "trader/index";
 	}	
 	
 	@RequestMapping("/admin/index")
 	private String adminIndex(ModelMap map){
 		includeTemplateUtil.getInstance().getNavigation(1, map);
-		return "/admin/index";
+		return "admin/index";
 	}	
 	
 
-	
+
 	@RequestMapping("/")
 	private String defaultIndex(){
 		return "login";
+	}
+	
+	
+	@RequestMapping("/introduction")
+	private String introduction(){
+		return "introduction";
 	}
 	
 	
@@ -159,6 +165,7 @@ public class TotalController
         if(currentUser.isAuthenticated()){  
             logger.info("用户[" + userName + "]登录认证通过(这里可以进行一些认证通过后的一些系统参数初始化操作)");  
             SavedRequest savedRequest = WebUtils.getSavedRequest(request);
+            //SavedRequest savedRequest = null;
             Session session = currentUser.getSession();
             session.setAttribute("userName", userName);
             //如果改变成需要id，直接用name的方式能够提高性能
@@ -194,6 +201,38 @@ public class TotalController
         return "redirect:/login";
     }
 	
+	@RequestMapping(value="/password/mail", method=RequestMethod.GET)
+    public String setPassMailAddress(){
+        return "passForget";
+    }
+	
+	@RequestMapping(value="/password/mail/url", method=RequestMethod.POST)
+    public String sendUrlToPassMail(@RequestParam("mail") String mail,ModelMap map){        
+		userService.sendMailForNewPass(mail);
+		map.addAttribute("mail", mail);
+        return "passSendMail";
+    }
+	
+	@RequestMapping(value="/password/mail/info/{userID}/{timestamp}/{hash}", method=RequestMethod.GET)
+    public String resetPass(@PathVariable("userID") Integer userID, 
+    					@PathVariable("timestamp") Long timestamp, 
+    					@PathVariable("hash") String hash,
+    					ModelMap map){        
+		Boolean result = userService.validateHash(hash, userID, timestamp);
+		map.addAttribute("userID", userID);
+		if(result==true) return "passReset";
+		else return "passResetFail";
+    }
+	
+	@RequestMapping(value="/password/mail/newInfo", method=RequestMethod.POST)
+    public String recover(@RequestParam("userID") Integer userID,
+    					@RequestParam("pass1") String pass1, 
+    					@RequestParam("pass2") String pass2,
+    					ModelMap map){        
+		userService.setNewPass(userID, pass1, pass2, map);	
+        return "passAfterReset";
+    }
+	
 	
 	@RequestMapping(value="/common/user/ownAccounts/{userID}/{userType}", method=RequestMethod.GET)
     public String userOwnAccounts(@PathVariable("userID") Integer userID, 
@@ -213,7 +252,7 @@ public class TotalController
         Pageable pageable = new PageRequest(page, size, sort);
         userService.getAllUserAccountInfo(map, pageable);
         map.addAttribute("requestPage", page);
-        return "/admin/userInfo";
+        return "admin/userInfo";
     }
 	
 	
@@ -226,7 +265,7 @@ public class TotalController
         Pageable pageable = new PageRequest(page, size, sort);
         resourceComsumeUserService.getAllResourceComsumeUser(map, pageable);
         map.addAttribute("requestPage", page);
-        return "/admin/resourceComsumeUser";
+        return "admin/resourceComsumeUser";
     }
 	
 	
@@ -266,7 +305,7 @@ public class TotalController
 	private String getFollowAccounts(@PathVariable("userID") Integer userID, ModelMap map){
 		includeTemplateUtil.getInstance().getNavigation(2, map);
 		map.addAttribute("followList", followOrderService.getAccountsByUserID(userID));
-		return "/trader/follow";
+		return "trader/follow";
 	}
 	
 	
@@ -322,7 +361,7 @@ public class TotalController
 		//---
 		onlineMonitorService.initialOnlineMonitor(userID,map);
 		includeTemplateUtil.getInstance().getNavigation(2, map);		
-		return "/trader/onlineMonitor";
+		return "trader/onlineMonitor";
     }
 	
 

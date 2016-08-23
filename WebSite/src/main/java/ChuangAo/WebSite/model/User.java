@@ -91,4 +91,8 @@ public class User {
     public Short getNoticeType(){
     	return noticetype;
     }
+    
+    public void setPassword(String pass){
+    	
+    }
 }

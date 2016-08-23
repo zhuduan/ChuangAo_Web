@@ -22,7 +22,7 @@ public class commonTimer {
     	//--- star timer
     	Timer timer = new Timer();
     	timer.schedule(heartbeatStatusDaemon, 20000, 1000);	//interval 1000ms
-    	timer.schedule(onlineObserversDaemon, 1000, 15000);	//interval 15,000ms
+    	timer.schedule(onlineObserversDaemon, 1000, 30000);	//interval 15,000ms
 		
 		
 		//---others

@@ -34,4 +34,16 @@ public class TextMessageSender {
 		return true;
 	}
 	
+	private static class TextMessageSenderHolder {  
+        private static final TextMessageSender INSTANCE = new TextMessageSender();  
+    }  
+	
+	public static final TextMessageSender getInstance() {  
+        return TextMessageSenderHolder.INSTANCE; 
+    }  
+	
+	private TextMessageSender(){
+		
+	}
+	
 }

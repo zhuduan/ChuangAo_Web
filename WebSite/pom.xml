@@ -5,8 +5,7 @@
 
   <groupId>ChuangAo</groupId>
   <artifactId>WebSite</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>war</packaging>
+  <version>1.0.0-SNAPSHOT</version>
 
   <parent>
         <groupId>org.springframework.boot</groupId>
@@ -142,6 +141,7 @@
 		    <url>file://${project.basedir}/lib</url>
 		</repository>
     </repositories>
+    
     <pluginRepositories>
         <pluginRepository>
             <id>spring-snapshots</id>

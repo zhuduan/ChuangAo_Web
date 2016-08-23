@@ -4,11 +4,7 @@ import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.apache.shiro.session.Session;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
@@ -17,11 +13,10 @@ import ChuangAo.WebSite.service.FollowOrderService;
 
 public class OnlineMonitorObserver implements Observer {
 	
-	private static final Logger logger = LoggerFactory.getLogger(OnlineMonitorObserver.class);
+	//private static final Logger logger = LoggerFactory.getLogger(OnlineMonitorObserver.class);
 	
 	private SimpMessagingTemplate messagingTemplate;
-	private JavaMailSender mailSender;
-	private TextMessageSender textMessageSender = new TextMessageSender();
+	private TextMessageSender textMessageSender = TextMessageSender.getInstance();
 	public Observable observable; 
 	
 	private User user;
@@ -40,9 +35,9 @@ public class OnlineMonitorObserver implements Observer {
 		this.ownAccounts = new JSONObject(user.getOwnAccounts());
 		this.observable = observable;
 		this.messagingTemplate = messagingTemplate;
-		this.mailSender = mailSender;
 		this.timeLong = timeLong;
 		observable.addObserver(this);
+		MailMessageSender.getInstance().setMailSender(mailSender);
 	}
 	
 	public OnlineMonitorObserver(){
@@ -93,7 +88,7 @@ public class OnlineMonitorObserver implements Observer {
 				jsonValue.put("lots", "未开通");
 			}
 			send(desUrl, jsonValue.toString());
-			//---notice 
+			//---lost connection notice 
 			sendNotice(user.getNoticeType());
 			
 		}
@@ -133,22 +128,7 @@ public class OnlineMonitorObserver implements Observer {
 	}	
 	
 	
-	private void sendSimpleEmail(String desAddress, String subject, String content){
-		 SimpleMailMessage message = new SimpleMailMessage();
-	      
-	     message.setFrom("2570278383@qq.com");//发送者.
-	     message.setTo(desAddress);//接收者.
-	     message.setSubject(subject);//邮件主题.
-	     message.setText(content);//邮件内容.
-	     
-	     try{
-	    	 mailSender.send(message);//发送邮件
-	     }
-	     catch(Exception e){
-	    	 logger.debug("send mail fail: "+e.getMessage());
-	    	 e.printStackTrace();
-	     }
-	}
+	
 	
 	private void sendNotice(int noticeType){
 		if(changedAccountStatus==4 || changedAccountStatus==7){
@@ -168,7 +148,7 @@ public class OnlineMonitorObserver implements Observer {
 						break;
 					case 1:
 						//only email
-						sendSimpleEmail(user.getEmail(),subject,content);
+						MailMessageSender.getInstance().sendSimpleEmail(user.getEmail(),subject,content);
 						mailUseTimes++;
 						break;
 					case 2:
@@ -178,7 +158,7 @@ public class OnlineMonitorObserver implements Observer {
 						break;
 					case 3:
 						//both
-						sendSimpleEmail(user.getEmail(),subject,content);
+						MailMessageSender.getInstance().sendSimpleEmail(user.getEmail(),subject,content);
 						textMessageSender.sendNoticeText(user.getName(), changedAccountID, reason, user.getTelephone());
 						mailUseTimes++;
 						textUseTimes++;

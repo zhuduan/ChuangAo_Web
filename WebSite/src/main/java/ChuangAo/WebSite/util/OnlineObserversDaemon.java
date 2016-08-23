@@ -14,7 +14,7 @@ import ChuangAo.WebSite.repository.ResourceComsumeUserRepository;
 
 public class OnlineObserversDaemon extends TimerTask  {
 	
-	private int maxObserversKeepSeconds = 60;
+	private int maxObserversKeepSeconds = 100;
 	public ConcurrentHashMap<Integer,Integer> observersCountDown = new ConcurrentHashMap<Integer,Integer>(); 
 	
 	private OnlineMonitorSubject onlineMonitorSubject = OnlineMonitorSubject.getInstance();
@@ -88,7 +88,7 @@ public class OnlineObserversDaemon extends TimerTask  {
 			Integer tempKey = entry.getKey();
 			if(tempValue>0){
 				//---still connect
-				tempValue=tempValue-15;
+				tempValue=tempValue-30;
 				entry.setValue(tempValue);
 			} else {
 				//---lose heart heartbeat

@@ -51,11 +51,16 @@ public class includeTemplateUtil {
 			logger.error("load application.properties error,class根目录下找不到application.properties文件");
 			e.printStackTrace();
 		}
-		logger.info("application.properties success");
+		logger.info("application.properties success");		
+	}
+	
+	public String getHostHome(){
+		return this.homeUrl;
 	}
 	
 	public void getNavigation(Integer naviType,ModelMap map){				
 		String fileUrl = templateUrl;
+		logger.info("*************"+templateUrl);
 		switch(naviType){
 			case 1:
 				//admin navigatioin
@@ -108,7 +113,7 @@ public class includeTemplateUtil {
 		if(address.contains(keyWord)==false){
 			return address;
 		}
-		int position = address.indexOf(keyWord) + keyWord.length() + 1;
+		int position = address.indexOf(keyWord) + keyWord.length();
 		return address.substring(position);
 	}
 	
