@@ -174,19 +174,26 @@ public class TotalController
             if(savedRequest==null || savedRequest.getRequestUrl()=="/login"){
             	//TODO: 根据用户种类跳转
             	if(currentUser.hasRole("sysAdmin")==true){
+            		logger.info("用户[" + userName + "] is sysAdmin");  
             		return "redirect:/trader/index";
             	} else if(currentUser.hasRole("trader")==true){
+            		logger.info("用户[" + userName + "] is trader");  
             		return "redirect:/trader/index";
             	} else if(currentUser.hasRole("developer")==true){
+            		logger.info("用户[" + userName + "] is developer");  
             		return "redirect:/developer/index";
             	} else if(currentUser.hasRole("admin")==true){
+            		logger.info("用户[" + userName + "] is admin");  
             		return "redirect:/admin/index";
             	} else if(currentUser.hasRole("register")==true){
+            		logger.info("用户[" + userName + "] is register");  
             		return "redirect:/register/index";
             	} else {
+            		logger.info("用户[" + userName + "] is normal");  
             		return "redirect:/normal/index";
             	}
             }
+            logger.info("用户[" + userName + "] request before:"+savedRequest.getRequestUrl());  
             return "redirect:"+savedRequest.getRequestUrl();
         }else{  
             token.clear();  
@@ -266,6 +273,24 @@ public class TotalController
         resourceComsumeUserService.getAllResourceComsumeUser(map, pageable);
         map.addAttribute("requestPage", page);
         return "admin/resourceComsumeUser";
+    }
+	
+	@RequestMapping(value="/admin/followAuthority", method=RequestMethod.GET)
+    public String getFollowAuthorityPage(ModelMap map){   
+		includeTemplateUtil.getInstance().getNavigation(1, map);
+        return "admin/followAuthority";
+    }
+	
+	@RequestMapping(value="/admin/follow/authority", method=RequestMethod.POST)
+    public String updateFollowAuthority(ModelMap map,
+    								@RequestParam(value = "accountID", defaultValue = "0") Integer accountID,
+    								@RequestParam(value = "accountType", defaultValue = "10") Short accountType,
+    								@RequestParam(value = "expireDate", defaultValue = "2016-01-01") String expireDate,
+    								@RequestParam(value = "followAccounts", defaultValue = "0") String followAccounts){
+        includeTemplateUtil.getInstance().getNavigation(1, map);
+        followOrderService.updateFollowInfo(accountID, accountType, expireDate, followAccounts);
+        map.addAttribute("updateResult", "信息更新成功");
+        return "admin/index";
     }
 	
 	

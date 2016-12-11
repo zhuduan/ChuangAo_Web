@@ -53,7 +53,6 @@ public class UserService {
 	     map.addAttribute("userPage",userRepository.findAll(pageable));
 	 }
 	 
-	 
 	 public void sendMailForNewPass(String mail){
 		 User user = userRepository.findByemail(mail);
 		 if(user==null){
@@ -112,6 +111,9 @@ public class UserService {
 		 
 	 }
 	 
-	 
+	 public void insertNewUser(String name,String authority,String email,int group,int noticetype){	
+		 User user  = new User();		
+		 userRepository.save(user);
+	 }
 	
 }

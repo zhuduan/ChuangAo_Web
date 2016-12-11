@@ -15,25 +15,27 @@ import org.springframework.transaction.annotation.Transactional;
 public interface UserRepository extends JpaRepository<User, Integer> {
     
 	@Query("SELECT u FROM User u WHERE u.name = :name and pass= PASSWORD(:pass)")
-    User findByName(@Param("name") String name,
+    public User findByName(@Param("name") String name,
     				@Param("pass") String pass);
 	
 	@Query("SELECT u FROM User u WHERE u.id = :id and pass= PASSWORD(:pass)")
-    User findById(@Param("id") Integer id,
+    public User findById(@Param("id") Integer id,
 				  @Param("pass") String pass);
 	
-	User findByid(Integer id);
+	public User findByid(Integer id);
 	
-	User findByname(String name);
+	public User findByname(String name);
 	
-	User findByemail(String email);
+	public User findByemail(String email);
 	
-	Page<User> findAll(Pageable pageable);	
+	public Page<User> findAll(Pageable pageable);	
 	
 	@Modifying 
 	@Transactional
 	@Query("UPDATE User u SET pass=PASSWORD(:pass) WHERE u.id = :id")
-    int updatePass(@Param("id") Integer id,
+    public int updatePass(@Param("id") Integer id,
 				  @Param("pass") String pass);	
 	
+	@SuppressWarnings("unchecked")
+	public User save(User user);
 }

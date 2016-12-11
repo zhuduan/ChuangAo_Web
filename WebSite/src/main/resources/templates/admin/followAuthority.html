@@ -1,0 +1,115 @@
+﻿<!doctype html>
+<html class="no-js">
+<head th:utext="${headContent}">
+  <meta charset="utf-8"></meta>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+  <title>chuangao trade Index</title>
+  
+  <link rel="stylesheet" href="../../static/assets/css/amazeui.min.css"></link>
+  <link rel="stylesheet" href="../../static/assets/css/admin.css"></link>
+</head>
+<body>
+<!--[if lte IE 9]>
+<p class="browsehappy">你正在使用<strong>过时</strong>的浏览器，网站暂不支持。 请 <a href="http://browsehappy.com/" target="_blank">升级浏览器</a>
+  以获得更好的体验！</p>
+<![endif]-->
+
+<header class="am-topbar admin-header" th:utext="${headerContent}">
+  <div class="am-topbar-brand">
+    <strong>创澳商务</strong> <small>管理系统</small>
+  </div>  
+</header>
+
+<div class="am-cf admin-main">
+  <!-- sidebar start -->
+  <div class="admin-sidebar am-offcanvas" id="admin-offcanvas" th:utext="${sideBarContent}">
+    sidebar here
+  </div>
+  <!-- sidebar end -->
+
+  <!-- content start -->
+  <div class="admin-content" id="contentDiv">
+	<div class="am-cf am-padding">
+      <div class="am-fl am-cf"><strong class="am-text-primary am-text-lg">跟单权限</strong> / <small>账号权限修改</small></div>
+    </div>
+	<ul class="am-list am-list-static am-list-border">
+		<li>
+			说明：
+		</li>
+		<li>
+			<i class="am-icon-home am-icon-fw"></i>
+			<strong>账号ID：</strong>需要更改的账号，为纯数字组成
+		</li>
+		<li>
+			<i class="am-icon-book am-icon-fw"></i>
+			<strong>账号类型：</strong>0代表无权限，1代表仅能跟单，2代表仅能发送，3代表既能跟也能发
+		</li>
+		<li>
+			<i class="am-icon-pencil am-icon-fw"></i>
+			<strong>过期时间：</strong>需要填写为固定形式，如: 2017-01-01 10:00:00
+		</li>
+        <li>
+			<i class="am-icon-pencil am-icon-fw"></i>
+			<strong>喊单账号：</strong>该账号下能跟随的所有喊单账号，不同账号间使用逗号隔开，如：123,111
+		</li>
+	</ul>
+	
+	<div class="am-g">
+		<div class="am-u-sm-12">
+			<form class="am-form" method="post" action="follow/authority">
+				<table class="am-table am-table-striped am-table-hover table-main">
+					<tbody>
+						<tr>
+							<td>账号ID</td>
+							<td><input type="text" class="am-form-field" name="accountID"></input></td>
+						</tr> 
+                        <tr>
+							<td>账号类型</td>
+							<td><input type="text" class="am-form-field" name="accountType"></input></td>
+						</tr> 
+                        <tr>
+							<td>过期时间</td>
+							<td><input type="text" class="am-form-field" name="expireDate"></input></td>
+						</tr> 
+                        <tr>
+							<td>跟单账号</td>
+							<td><input type="text" class="am-form-field" name="followAccounts"></input></td>
+						</tr> 
+                        <tr>
+                            
+                        </tr>
+					</tbody>
+				</table>	
+                <button type="submit" class="am-btn am-btn-primary am-btn-xs">提交保存</button>                
+			</form>
+		</div>
+    </div>
+  </div>	
+  <!-- content end -->
+
+</div>
+
+<a href="#" class="am-show-sm-only admin-menu" data-am-offcanvas="{target: '#admin-offcanvas'}">
+  <span class="am-icon-btn am-icon-th-list"></span>
+</a>
+
+<footer th:utext="${footerContent}">
+  footer here
+	<script src="../../static/assets/js/jquery.min.js"></script>
+	<!--<![endif]-->
+	<script src="../../static/assets/js/amazeui.min.js"></script>
+	<script src="../../static/assets/js/app.js"></script>
+</footer>
+	
+	<script src="../../static/assets/js/pageJs.js" th:src="@{/assets/js/pageJs.js}"></script>
+	<script type="text/javascript">		
+		$(document).ready(function(){		
+			var targetUrl = "/admin/user/ownAccounts";
+			getPageInfo(targetUrl);					
+		});		
+		
+		
+	</script>
+
+</body>
+</html>

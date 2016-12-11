@@ -16,5 +16,8 @@ public interface FollowRepository extends JpaRepository<Follow, Integer> {
     
     @Query("SELECT f FROM Follow f WHERE f.accountid IN (:accountIDs)")
     List<Follow> findInAccountIDList(@Param("accountIDs") List<Integer> accountIDs);
+    
+    @SuppressWarnings("unchecked")
+	Follow save(Follow follow);
    
 }

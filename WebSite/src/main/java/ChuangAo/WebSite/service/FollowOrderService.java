@@ -6,6 +6,7 @@ import ChuangAo.WebSite.repository.UserRepository;
 import ChuangAo.WebSite.util.OnlineMonitorSubject;
 import ChuangAo.WebSite.util.senderStatusChangeDaemon;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -385,7 +386,7 @@ public class FollowOrderService {
 		}
 		
 		Date currentTime = new Date();
-		if(follow.getExpireTime().before(currentTime)==true){
+		if(follow.getExpireTime().before(currentTime)){
 			//System.out.println("db:"+follow.getExpireTime());
 			//System.out.println("now:"+currentTime);
 			return -4;	//exceed the expire time
@@ -411,5 +412,35 @@ public class FollowOrderService {
 			ownAccountsList.add(key);
 		}
 		return followRepository.findInAccountIDList(ownAccountsList);
+	}
+	
+	public void updateFollowInfo(Integer accountID,Short accountType,String expireDate,String followAccounts){
+		Timestamp expireTime = Timestamp.valueOf(expireDate);  
+		
+		String[] followersID = followAccounts.split(",");
+		JSONArray jsonArray = new JSONArray();
+		for(String follower : followersID){
+			JSONObject json = new JSONObject();
+			json.put("id", Integer.parseInt(follower));
+			jsonArray.put(json);
+		}
+		JSONObject finalJson = new JSONObject();
+		finalJson.put("ids", jsonArray);
+		
+		Follow follow = new Follow();
+		follow.setAccountID(accountID);
+		follow.setAccountType(accountType);
+		follow.setExpireTime(expireTime);
+		follow.setFollowAccount(finalJson.toString());	
+		follow.setAsReceiver(0);
+		follow.setAsSender(0);
+		
+		Follow tempFollow = followRepository.findByAccountID(accountID);
+		if(tempFollow!=null){
+			follow.setAsReceiver(tempFollow.getAsReceiver());
+			follow.setAsSender(tempFollow.getAsSender());
+		}
+		
+		followRepository.save(follow);
 	}
 }
